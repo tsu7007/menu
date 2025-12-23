@@ -369,8 +369,8 @@
             color: white;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        /* Mobile First - Responsive */
+        @media (max-width: 900px) {
             .container {
                 flex-direction: column;
             }
@@ -384,11 +384,12 @@
 
             .menu-section {
                 flex: 1;
-                min-height: 50%;
+                min-height: auto;
+                max-height: 50vh;
             }
 
             .menu-items {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
             }
 
             header h1 {
@@ -396,30 +397,127 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 600px) {
+            body {
+                font-size: 13px;
+            }
+
             header {
-                padding: 12px 16px;
+                padding: 10px 12px;
             }
 
             header h1 {
-                font-size: 18px;
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
+
+            header p {
+                font-size: 11px;
+            }
+
+            .container {
+                gap: 0;
+                overflow: hidden;
+            }
+
+            .menu-section {
+                padding: 10px;
+                max-height: 45vh;
+            }
+
+            .category-tabs {
+                gap: 6px;
+                margin-bottom: 10px;
+            }
+
+            .category-btn {
+                padding: 6px 12px;
+                font-size: 11px;
             }
 
             .menu-items {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
             }
 
             .menu-item {
-                padding: 10px;
+                padding: 8px;
             }
 
             .menu-item-name {
-                font-size: 12px;
+                font-size: 11px;
                 min-height: 28px;
             }
 
             .menu-item-price {
+                font-size: 13px;
+            }
+
+            .order-section {
+                border-top: 3px solid var(--primary-color);
+                max-height: 55vh;
+            }
+
+            .order-items {
+                max-height: calc(55vh - 280px);
+            }
+
+            .order-item {
+                padding: 8px;
+                font-size: 12px;
+            }
+
+            .order-item-name {
+                font-size: 12px;
+                margin-bottom: 2px;
+            }
+
+            .order-item-price {
+                font-size: 11px;
+            }
+
+            .qty-btn, .remove-btn {
+                width: 22px;
+                height: 22px;
+                font-size: 13px;
+            }
+
+            .qty-input {
+                width: 28px;
+                padding: 3px;
+                font-size: 11px;
+            }
+
+            .btn {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+
+            .summary-row {
+                font-size: 12px;
+                padding: 4px 0;
+            }
+
+            .summary-row.total {
                 font-size: 14px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .menu-items {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .menu-section {
+                max-height: 40vh;
+            }
+
+            .order-section {
+                max-height: 60vh;
+            }
+
+            .order-items {
+                max-height: calc(60vh - 320px);
             }
         }
 
@@ -465,8 +563,28 @@
     <!-- Header -->
     <header>
         <h1>📋 Sistema de Pedidos</h1>
-        <p>Gestor de órdenes para camareros</p>
+        <p id="tableInfo" style="margin-bottom: 8px;">Sin mesa seleccionada</p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+            <button id="salonBtn" style="padding: 6px 12px; background-color: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.5); border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">🏠 Salón</button>
+            <button id="terrazaBtn" style="padding: 6px 12px; background-color: rgba(255,255,255,0.2); color: white; border: 2px solid rgba(255,255,255,0.5); border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600;">🌳 Terraza</button>
+        </div>
     </header>
+
+    <!-- Table Selection Modal -->
+    <div id="tableModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999; flex-direction: column; align-items: center; justify-content: center; padding: 16px;">
+        <div style="background-color: white; border-radius: 12px; padding: 20px; max-width: 400px; width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,0.3);">
+            <div style="font-size: 16px; font-weight: 700; margin-bottom: 16px; color: #1a1a1a;">Selecciona una Mesa</div>
+            
+            <div style="margin-bottom: 16px;">
+                <div style="font-size: 13px; font-weight: 600; margin-bottom: 10px; color: var(--text-primary);" id="modalLocationTitle">Salón</div>
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;" id="tableGrid">
+                    <!-- Tables will be generated here -->
+                </div>
+            </div>
+
+            <button id="closeModalBtn" style="width: 100%; padding: 10px; background-color: var(--border-color); color: var(--text-primary); border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Cerrar</button>
+        </div>
+    </div>
 
     <!-- Main Container -->
     <div class="container">
@@ -495,22 +613,25 @@
             <!-- Order Footer -->
             <div class="order-footer">
                 <div class="order-summary">
-                    <div class="summary-row">
-                        <span class="summary-label">Subtotal:</span>
-                        <span class="summary-value">€0.00</span>
-                    </div>
-                    <div class="summary-row">
-                        <span class="summary-label">IVA (21%):</span>
-                        <span class="summary-value">€0.00</span>
-                    </div>
                     <div class="summary-row total">
                         <span>TOTAL:</span>
                         <span class="summary-value">€0.00</span>
                     </div>
                 </div>
 
+                <div id="customItemSection" style="display: none; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 2px solid var(--border-color);">
+                    <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">Añadir Custom:</div>
+                    <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+                        <input type="text" id="customName" placeholder="Nombre" style="flex: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px;">
+                        <input type="number" id="customPrice" placeholder="€" step="0.10" min="0" style="width: 50px; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px;">
+                    </div>
+                    <button id="addCustomBtn" style="width: 100%; padding: 8px; background-color: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer;">Añadir</button>
+                </div>
+
                 <div class="button-group">
-                    <button class="btn btn-primary" id="copyBtn" disabled>📋 Copiar Orden</button>
+                    <button class="btn btn-primary" id="copyBtn" disabled>📋 Copiar</button>
+                    <button class="btn btn-secondary" id="toggleCustomBtn">➕ Otros</button>
+                    <button class="btn btn-secondary" id="selectTableBtn">🪑 Mesa</button>
                     <button class="btn btn-secondary" id="clearBtn">🗑️ Limpiar</button>
                 </div>
             </div>
@@ -523,14 +644,22 @@
         // ============================================
         const menuData = {
             "Desayunos": [
-                { name: "Tostada de Tomate", price: 0.90, desc: "Media tostada" },
-                { name: "Tostada de Aceite", price: 0.90, desc: "Media tostada" },
-                { name: "Tostada Mantequilla/Mixta", price: 0.90, desc: "Media tostada" },
-                { name: "Tostada Atún y Tomate", price: 1.50, desc: "Media tostada" },
-                { name: "Tostada Atún, Tomate y Queso", price: 1.70, desc: "Media tostada" },
-                { name: "Tostada de Queso y Tomate", price: 1.50, desc: "Media tostada" },
-                { name: "Tostada de Queso y Pavo", price: 1.70, desc: "Media tostada" },
-                { name: "Tostada de Tomate y Pavo", price: 1.50, desc: "Media tostada" }
+                { name: "Tostada Tomate - Media", price: 0.90 },
+                { name: "Tostada Tomate - Entera", price: 1.50 },
+                { name: "Tostada Aceite - Media", price: 0.90 },
+                { name: "Tostada Aceite - Entera", price: 1.50 },
+                { name: "Tostada Mantequilla/Mixta - Media", price: 0.90 },
+                { name: "Tostada Mantequilla/Mixta - Entera", price: 1.50 },
+                { name: "Tostada Atún y Tomate - Media", price: 1.50 },
+                { name: "Tostada Atún y Tomate - Entera", price: 3.00 },
+                { name: "Tostada Atún, Tomate y Queso - Media", price: 1.70 },
+                { name: "Tostada Atún, Tomate y Queso - Entera", price: 3.50 },
+                { name: "Tostada Queso y Tomate - Media", price: 1.50 },
+                { name: "Tostada Queso y Tomate - Entera", price: 3.00 },
+                { name: "Tostada Queso y Pavo - Media", price: 1.70 },
+                { name: "Tostada Queso y Pavo - Entera", price: 3.00 },
+                { name: "Tostada Tomate y Pavo - Media", price: 1.50 },
+                { name: "Tostada Tomate y Pavo - Entera", price: 3.00 }
             ],
             "Especiales Desayuno": [
                 { name: "Crêpes Chocolate", price: 3.50 },
@@ -553,7 +682,7 @@
                 { name: "Té Albayeín", price: 3.50 },
                 { name: "Té Pakistaní con Leche", price: 4.00 }
             ],
-            "Batidos & Zumos": [
+            "Batidos": [
                 { name: "Fresa", price: 4.00 },
                 { name: "Frutos Rojos", price: 4.00 },
                 { name: "Aguacate", price: 4.00 },
@@ -561,19 +690,20 @@
                 { name: "Plátano, Dátiles y Almendras", price: 5.50 }
             ],
             "Bocadillos": [
-                { name: "Bocadillo de Queso y Manchego con Tomate", price: 3.50 },
-                { name: "Bocadillo de Atún y Tomate", price: 4.50 },
-                { name: "Bocadillo de Atún, Tomate y Queso", price: 5.00 },
-                { name: "Bocadillo de Tortilla Francesa", price: 3.50 },
-                { name: "Bocadillo de Tortilla Española", price: 4.00 },
-                { name: "Bocadillo de Tortilla Francesa, Atún y Pavo", price: 5.00 },
-                { name: "Bocadillo de Calamares", price: 5.00 },
-                { name: "Bocadillo de Pavo y Queso con Tomate", price: 4.00 },
-                { name: "Bocadillo de Pechuga de Pollo", price: 5.00 },
-                { name: "Kebab de Pollo Completo", price: 6.00 },
+                { name: "Bocadillo Queso y Manchego con Tomate", price: 3.50 },
+                { name: "Bocadillo Atún y Tomate", price: 4.50 },
+                { name: "Bocadillo Atún, Tomate y Queso", price: 5.00 },
+                { name: "Bocadillo Tortilla Francesa", price: 3.50 },
+                { name: "Bocadillo Tortilla Española", price: 4.00 },
+                { name: "Bocadillo Tortilla Francesa, Atún y Pavo", price: 5.00 },
+                { name: "Bocadillo Calamares", price: 5.00 },
+                { name: "Bocadillo Pavo y Queso con Tomate", price: 4.00 },
+                { name: "Bocadillo Pechuga de Pollo", price: 5.00 },
+                { name: "Kebab Pollo Completo", price: 6.00 },
                 { name: "Hamburguesa Ternera con Patatas Fritas", price: 8.00 },
                 { name: "Hamburguesa Pollo con Patatas Fritas", price: 7.00 }
-            ]
+            ],
+            "Otros": []
         };
 
         // ============================================
@@ -581,6 +711,8 @@
         // ============================================
         let currentOrder = {};
         let currentCategory = null;
+        let selectedTable = null;
+        let selectedLocation = 'Salón';
 
         // ============================================
         // INITIALIZATION
@@ -754,47 +886,41 @@
         // CALCULATIONS
         // ============================================
         function calculateTotals() {
-            let subtotal = 0;
+            let total = 0;
 
             Object.values(currentOrder).forEach(item => {
-                subtotal += item.price * item.quantity;
+                total += item.price * item.quantity;
             });
 
-            const iva = subtotal * 0.21;
-            const total = subtotal + iva;
-
             return {
-                subtotal: subtotal.toFixed(2),
-                iva: iva.toFixed(2),
                 total: total.toFixed(2)
             };
         }
 
         function updateTotals() {
             const totals = calculateTotals();
-            const summaryRows = document.querySelectorAll('.summary-row');
-
-            summaryRows[0].querySelector('.summary-value').textContent = `€${totals.subtotal}`;
-            summaryRows[1].querySelector('.summary-value').textContent = `€${totals.iva}`;
-            summaryRows[2].querySelector('.summary-value').textContent = `€${totals.total}`;
+            const summaryRow = document.querySelector('.summary-row.total .summary-value');
+            summaryRow.textContent = `€${totals.total}`;
         }
 
         // ============================================
         // COPY & SHARE FUNCTIONALITY
         // ============================================
         function generateOrderText() {
-            let text = '=== PEDIDO / ORDER ===\n\n';
+            let text = '=== PEDIDO ===\n';
+            if (selectedTable) {
+                text += `Mesa ${selectedTable}\n`;
+            }
+            text += '\n';
 
             Object.values(currentOrder).forEach(item => {
                 const subtotal = (item.price * item.quantity).toFixed(2);
-                text += `${item.quantity}x ${item.name} - €${item.price.toFixed(2)} each = €${subtotal}\n`;
+                text += `${item.quantity}x ${item.name} - €${item.price.toFixed(2)} c/u = €${subtotal}\n`;
             });
 
             const totals = calculateTotals();
 
             text += '\n━━━━━━━━━━━━━━━━━━━\n';
-            text += `Subtotal: €${totals.subtotal}\n`;
-            text += `IVA (21%): €${totals.iva}\n`;
             text += `TOTAL: €${totals.total}\n`;
             text += '━━━━━━━━━━━━━━━━━━━';
 
@@ -841,6 +967,60 @@
         }
 
         // ============================================
+        // CUSTOM ITEM MANAGEMENT
+        // ============================================
+        function toggleCustomItemSection() {
+            const section = document.getElementById('customItemSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            if (section.style.display === 'block') {
+                document.getElementById('customName').focus();
+            }
+        }
+
+        function addCustomItem() {
+            const nameInput = document.getElementById('customName');
+            const priceInput = document.getElementById('customPrice');
+            const name = nameInput.value.trim();
+            const price = parseFloat(priceInput.value);
+
+            if (!name) {
+                alert('Por favor ingresa el nombre del artículo');
+                return;
+            }
+
+            if (isNaN(price) || price <= 0) {
+                alert('Por favor ingresa un precio válido');
+                return;
+            }
+
+            // Add to custom items in menu
+            menuData["Otros"].push({ name: name, price: price });
+
+            // Add to order
+            const key = `Otros_${name}`;
+            if (currentOrder[key]) {
+                currentOrder[key].quantity += 1;
+            } else {
+                currentOrder[key] = {
+                    name: name,
+                    price: price,
+                    quantity: 1,
+                    category: "Otros"
+                };
+            }
+
+            // Clear inputs
+            nameInput.value = '';
+            priceInput.value = '';
+
+            // Close custom section
+            toggleCustomItemSection();
+
+            // Update display
+            updateOrderDisplay();
+        }
+
+        // ============================================
         // EVENT LISTENERS
         // ============================================
         function setupEventListeners() {
@@ -849,6 +1029,97 @@
                 currentOrder = {};
                 updateOrderDisplay();
             });
+            document.getElementById('toggleCustomBtn').addEventListener('click', toggleCustomItemSection);
+            document.getElementById('addCustomBtn').addEventListener('click', addCustomItem);
+            document.getElementById('selectTableBtn').addEventListener('click', openTableModal);
+            document.getElementById('salonBtn').addEventListener('click', () => switchLocation('Salón'));
+            document.getElementById('terrazaBtn').addEventListener('click', () => switchLocation('Terraza'));
+            document.getElementById('closeModalBtn').addEventListener('click', closeTableModal);
+            
+            // Allow Enter key to add custom item
+            document.getElementById('customPrice').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addCustomItem();
+            });
+        }
+
+        // ============================================
+        // TABLE MANAGEMENT
+        // ============================================
+        function openTableModal() {
+            const modal = document.getElementById('tableModal');
+            modal.style.display = 'flex';
+            renderTableGrid();
+        }
+
+        function closeTableModal() {
+            document.getElementById('tableModal').style.display = 'none';
+        }
+
+        function switchLocation(location) {
+            selectedLocation = location;
+            renderTableGrid();
+            // Update header styling
+            updateLocationButtons();
+        }
+
+        function updateLocationButtons() {
+            const salonBtn = document.getElementById('salonBtn');
+            const terrazaBtn = document.getElementById('terrazaBtn');
+            
+            if (selectedLocation === 'Salón') {
+                salonBtn.style.backgroundColor = 'rgba(255,255,255,0.4)';
+                salonBtn.style.borderColor = 'rgba(255,255,255,0.8)';
+                terrazaBtn.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                terrazaBtn.style.borderColor = 'rgba(255,255,255,0.5)';
+            } else {
+                terrazaBtn.style.backgroundColor = 'rgba(255,255,255,0.4)';
+                terrazaBtn.style.borderColor = 'rgba(255,255,255,0.8)';
+                salonBtn.style.backgroundColor = 'rgba(255,255,255,0.2)';
+                salonBtn.style.borderColor = 'rgba(255,255,255,0.5)';
+            }
+        }
+
+        function renderTableGrid() {
+            const grid = document.getElementById('tableGrid');
+            const title = document.getElementById('modalLocationTitle');
+            title.textContent = selectedLocation;
+            
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 10; i++) {
+                const tableBtn = document.createElement('button');
+                tableBtn.style.cssText = `
+                    padding: 12px;
+                    background-color: ${selectedTable === `${selectedLocation}-${i}` ? '#c9865a' : '#f5f1ed'};
+                    color: ${selectedTable === `${selectedLocation}-${i}` ? 'white' : '#1a1a1a'};
+                    border: 2px solid ${selectedTable === `${selectedLocation}-${i}` ? '#c9865a' : '#e0d5c8'};
+                    border-radius: 6px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                `;
+                tableBtn.textContent = i;
+                tableBtn.addEventListener('click', () => selectTable(i));
+                tableBtn.addEventListener('mouseover', () => {
+                    if (selectedTable !== `${selectedLocation}-${i}`) {
+                        tableBtn.style.backgroundColor = '#e0d5c8';
+                    }
+                });
+                tableBtn.addEventListener('mouseout', () => {
+                    if (selectedTable !== `${selectedLocation}-${i}`) {
+                        tableBtn.style.backgroundColor = '#f5f1ed';
+                    }
+                });
+                grid.appendChild(tableBtn);
+            }
+        }
+
+        function selectTable(tableNumber) {
+            selectedTable = `${selectedLocation}-${tableNumber}`;
+            const tableInfo = document.getElementById('tableInfo');
+            tableInfo.textContent = `Mesa ${tableNumber} - ${selectedLocation}`;
+            renderTableGrid();
         }
 
         // ============================================
